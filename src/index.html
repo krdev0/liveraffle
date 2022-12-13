@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/form.css">
+    <link rel="stylesheet" href="./css/wheel.css">
+</head>
+
+<body>
+    <main>
+        <div class="app">
+            <div class="wheel">
+                <div class="wheel-container">
+                    <div class="buttons">
+                        <div class="bottom_buttons">
+                            <div class="bottom_button push">
+                                <div class="push__text">
+                                    <p>Spin</p>
+                                </div>
+                                <button id="push" class="push__button">
+                                    <div class="button__front">
+                                    </div>
+                                    <div class="button__back">
+                                    </div>
+                                </button>
+                            </div>
+                            <div class="bottom_button join">
+                                <div class="push__text">
+                                    <p>Join</p>
+                                </div>
+                                <button id="join" class="push__button">
+                                    <div class="button__front">
+                                    </div>
+                                    <div class="button__back">
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chart">
+                        <div class="chart__front"></div>
+                        <div id="result"></div>
+                    </div>
+                </div>
+                <div id="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Winner:</h2>
+                            <span class="closeBtn">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="modal-body-name modal-body-container">
+                                <div class="modal-body-title">Name:</div>
+                                <div class="spin-result spin-result-name"></div>
+                            </div>
+                            <div class="modal-body-yt modal-body-container">
+                                <div class="modal-body-title">Youtube account:</div>
+                                <a class="spin-result spin-result-yt"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <ul id="user-list">
+                </ul>
+            </aside>
+        </div>
+    </main>
+
+    <div class="form-wrap hidden">
+        <div class="js-close-form">X</div>
+        <form class="card js-form">
+            <label class="input" style="margin-bottom: 20px;">
+                <input class="input__field" id="name-input" type="text" name="username" placeholder=" " />
+                <label class="input__label" for="username">Enter your name</label>
+            </label>
+            <label class="input">
+                <input class="input__field" id="youtube-input" type="text" name="youtube" placeholder=" " />
+                <label class="input__label" for="youtube">Youtube account</label>
+            </label>
+            <div class="button-group">
+                <button type="submit">Enter</button>
+            </div>
+        </form>
+    </div>
+
+
+    <script src="socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const form = document.querySelector(".js-form");
+        const formWrap = document.querySelector(".form-wrap");
+        const joinBtn = document.querySelector("#join");
+        const closeFormBtn = document.querySelector(".js-close-form");
+        const usersList = document.querySelector("#user-list");
+
+        function addUserToList(onlineUsers) {
+            const userDiv = document.createElement("li");
+            userDiv.textContent = onlineUsers.at(-1).name;
+            userDiv.setAttribute('data-user', onlineUsers.at(-1).id);
+            usersList.appendChild(userDiv);
+        }
+
+        function removeUserFromList(user) {
+            const currentUser = document.querySelector(`li[data-user="${user.id}"]`);
+            if(currentUser) {
+                currentUser.remove();
+            }
+        }
+
+        function displayUsers(users) {
+            users.forEach(user => {
+                const userDiv = document.createElement("li");
+                userDiv.textContent = user.name;
+                usersList.appendChild(userDiv);
+            });
+        }
+
+        closeFormBtn.addEventListener("click", () => {
+            formWrap.classList.add("hidden");
+        });
+
+        joinBtn.addEventListener("click", () => {
+            formWrap.classList.remove("hidden");
+        })
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            const name = document.querySelector('#name-input').value;
+            const youtubeAccount = document.querySelector("#youtube-input").value;
+            const data = {};
+            data.name = name;
+            data.youtube = youtubeAccount;
+
+            // Send the name to the server using socket.io
+            socket.emit('add-user', data);
+
+            document.querySelector(".join.bottom_button").remove();
+            formWrap.classList.add("hidden");
+        });
+
+        socket.on('user-connected', (data) => {
+            if(data) {
+                for(let i=0; i < data.length; i++) {
+
+                }
+            }
+        })
+
+        socket.on('update-users', (data) => {
+            addUserToList(data);
+        });
+
+        socket.on('user-left', (data) => {
+            removeUserFromList(data);
+        });
+    </script>
+    <script src="https://unpkg.com/d3@5.7.0/dist/d3.min.js"></script>
+    <script src="./js/wheel.js"></script>
+</body>
+
+</html>
